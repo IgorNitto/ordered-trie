@@ -1,1 +1,1 @@
-Priority trie data structure
+Container for ordered prefix search
