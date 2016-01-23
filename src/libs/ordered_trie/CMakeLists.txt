@@ -10,15 +10,21 @@ set (THIS_TARGET_TYPE "STATIC_LIBRARY")
 
 # List headers and source files
 set (THIS_HEADERS
+     "completion.h"
+     "completion.inl"
      "detail_encoding.h"
      "detail_encoding_impl.inl"
-     "detail_make_ordered_trie.h"
-     "detail_make_ordered_trie.inl"
+     "detail_iterator.h"
+     "detail_iterator.inl"
      "detail_payload_types.h"
+     "detail_serialise_trie.h"
+     "detail_serialise_trie.inl"
+     "detail_iterator.h"
+     "detail_iterator.inl"
      "detail_varint.h"
-     "serialise.h"
-     "traversal.h"
-     "traversal.inl")
+     "ordered_trie.h"
+     "ordered_trie.inl"
+     "serialise.h")
 
 # Define include path in installation folder.
 # Most likely this is always equal to target name.

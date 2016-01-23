@@ -14,83 +14,46 @@
 
 using namespace ordered_trie;
 
+/***********************************************************/
+
 namespace
 {
-/******************************************************************************/
+
+template<typename Node>
+void dsf_print (std::ostream&, const Node&, std::string);
 
 template<typename SiblingsRange>
-void dfs_print (std::ostream        &os,
-		const SiblingsRange &siblings,
-		std::string          prefix    = {},
-		std::uint32_t        base_rank = 0)
+void dfs_print_children (std::ostream        &os,
+			 const SiblingsRange &siblings,
+			 std::string          prefix = {})
 {
-  for (auto node_it  = std::begin (siblings);
-            node_it != std::end (siblings);
-          ++node_it)
+  for (const auto node : siblings)
   {
-    const auto node_view = *node_it;
-
-    const auto suggestion = 
-    [&] ()
-    {   
-      const auto label = node_view.label ();
-
-      auto result = prefix;
-      result.append (label.data (), label.size ());
-
-      return result;
-    } ();
-
-    base_rank += node_view.rank ();
-
-    if (node_view.is_leaf ())
-    {
-      os << "Label: " << suggestion << " "
-	 << "Rank: " << base_rank << std::endl;
-    }
-    else
-    {
-      os << "Internal node : " << node_view.label ()
-	 << " size: " << node_view.size ()
-	 << " offset : "<< node_view.children_offset ()
-	 << std::endl;
-
-      dfs_print (os,
-		 node_it.children (),
-		 suggestion,
-		 base_rank);
-    }
+    dsf_print (os, node, prefix);
   }
 }
 
-/******************************************************************************/
-
-template<typename Encoding>
+template<typename Node>
 void dfs_print (std::ostream &os,
-		detail::ConcreteNode<Encoding> root)
+		const Node   &node,
+		std::string   prefix = {})
 {
-  const auto base_rank = root.rank ();
-  const std::string prefix (root.label ().begin (),
-			    root.label ().end ());
+  const auto label = node.label ();
+  prefix.append (label.data (), label.size ());
 
-  const auto subtree_data = root.move_to_vector ();
+  os << node.rank () << "\t" 
+     << prefix << std::endl;
 
-  if (subtree_data.empty ())
+  if (!node.is_leaf ())
   {
-    os << "Label: " << prefix    << " "
-       << "Rank: "  << base_rank << std::endl;
-  }
-  else
-  {
-    const auto subtree_ptr = subtree_data.data ();
-
-    const auto siblings_range =
-      make_siblings_range<Encoding> (subtree_ptr);
-
-    dfs_print (std::cerr, siblings_range, prefix, base_rank);
+    dfs_print_siblings (
+      os, node.children (), prefix);
   }
 }
+
 } // namespace {
+
+/***********************************************************/
 
 BOOST_AUTO_TEST_CASE (test_encoding_32)
 {
@@ -145,6 +108,8 @@ BOOST_AUTO_TEST_CASE (test_encoding_32)
   
   BOOST_CHECK_EQUAL (read_offset, out.data () + out.size ());
 }
+
+/***********************************************************/
 
 BOOST_AUTO_TEST_CASE (test_encoding_64)
 {
@@ -203,6 +168,8 @@ BOOST_AUTO_TEST_CASE (test_encoding_64)
 
   BOOST_CHECK_EQUAL (read_offset, out.data () + out.size ());
 }
+
+/***********************************************************/
 
 BOOST_AUTO_TEST_CASE (test_node_encoding)
 {

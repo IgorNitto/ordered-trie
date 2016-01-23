@@ -15,8 +15,6 @@ namespace v0 {
 using ordered_trie::detail::VarInt32;
 using ordered_trie::detail::VarInt64;
 
-namespace detail {
-
 /*
  * First byte of node's encoding is an header storing
  * the type of encoding used to represent all node component:
@@ -26,7 +24,7 @@ namespace detail {
  *        (offset redundant in that case)
  * 
  * Possible implementation:
- * Notice: avoid bit fields for portability
+ * Note: avoid bit fields for portability
  *
  * @code
  * struct NodeHeader
@@ -55,34 +53,6 @@ enum NodeHeaderMask
   RANK_MASK    = ((1 << BIT_RANK) | (1 << (BIT_RANK + 1)))
 };
 
-/*****************************************************************/
-/* 
- * Helper functionalities for node's header decoding 
- */
-inline VarInt32::wordsize_t rank_encoding (std::uint8_t n)
-{
-  return static_cast<VarInt32::wordsize_t> (
-          (n & RANK_MASK) >> BIT_RANK);
-} 
-
-inline VarInt64::wordsize_t offset_encoding (std::uint8_t n)
-{
-  return static_cast<VarInt64::wordsize_t> (
-          (n & OFFSET_MASK) >> BIT_OFFSET);
-}
-
-inline std::uint8_t label_size (std::uint8_t n)
-{
-  return n & LABEL_MASK;
-}
-
-inline bool is_leaf (std::uint8_t n)
-{
-  return n & IS_LEAF_MASK;
-}
-
-} // namespace detail {
-
 /**
  * Build node encoding as concatenation of the following parts:
  *
@@ -91,10 +61,8 @@ inline bool is_leaf (std::uint8_t n)
  * - Node ranking score (incrementally encoded)
  * - String associated to inbound edge, aka label
  */
-template<typename PayLoad> struct Impl
+struct Impl
 {
-  using metadata_t = PayLoad;
-
   static constexpr const char* format_str ()
   {
     return "ENCODER_VER=0";
@@ -114,16 +82,14 @@ template<typename PayLoad> struct Impl
 
   /***********************************************************/
 
+  template<typename MetaData>
   static void
-  serialise_base_ (std::vector<std::uint8_t> &output,
-		   const std::size_t          children_offset,
-		   const std::uint64_t        rank,
-		   const boost::string_ref    label,
-		   const bool                 is_leaf)
+  serialise (std::vector<std::uint8_t>    &output,
+	     const ConcreteNode<MetaData> &node)
   {
     using namespace detail;
 
-    if (label.size () >= max_label_size ())
+    if (node.label.size () >= max_label_size ())
     {
       throw std::runtime_error ("Exceeded maximum label size");
     }
@@ -133,9 +99,14 @@ template<typename PayLoad> struct Impl
     const auto header_off = output.size () - 1;
 
     /* Stream out header fields: offset, rank, label */
-    const auto offset_encoding = VarInt64::serialise (output, children_offset);
-    const auto rank_encoding   = VarInt32::serialise (output, rank);
-    const auto label_size      = static_cast<std::uint8_t> (label.size ());
+    const auto offset_encoding =
+      VarInt64::serialise (output, node.children_offset);
+
+    const auto rank_encoding =
+      VarInt32::serialise (output, node.rank);
+
+    const auto label_size =
+      static_cast<std::uint8_t> (node.label.size ());
 
     /* Fill in header byte fields */
     output [header_off] =
@@ -145,33 +116,15 @@ template<typename PayLoad> struct Impl
       | (static_cast<std::uint8_t> (rank_encoding) << BIT_RANK);
 
     /* Append label bytes  */
-    std::copy (label.begin (), label.end (), back_inserter (output));
-  }
+    std::copy (node.label.begin (), node.label.end (),
+	       back_inserter (output));
 
-  /***********************************************************/
-  static void
-  serialise_internal (std::vector<std::uint8_t> &output,
-		      std::size_t                children_offset,
-		      std::uint64_t              rank,
-		      boost::string_ref          label)
-  {
-    serialise_base_ (output, children_offset, rank, label,
-		     false /* internal node */);
-  }
-
-  static void
-  serialise_leaf (std::vector<std::uint8_t> &output,
-		  std::size_t                children_offset,
-		  std::uint64_t              rank,
-		  boost::string_ref          label,
-		  const PayLoad             &metadata)
-  {
-    serialise_base_ (output, children_offset, rank, label,
-		     true /* leaf node */);
-
-    /* Append metadata encoding */
-
-    Serialise<PayLoad>::serialise (output, metadata);
+    /* On leaf nodes only: append metadata encoding */
+    if (node.is_leaf ())
+    {
+      Serialise<MetaData>::serialise (output,
+				      node.metadata.get ());
+    }
   }
 
   /*************************************************************/
@@ -190,13 +143,6 @@ template<typename PayLoad> struct Impl
     View (const View&)           = default;
     View& operator=(const View&) = default;
 
-    /************************************************************/
-
-    boost::string_ref label () const
-    {
-      return {label_data (), detail::label_size (*m_data)};
-    }
-
     /*********************************************************/
 
     inline const char *label_data () const
@@ -206,6 +152,13 @@ template<typename PayLoad> struct Impl
 	VarInt32::codeword_size (detail::rank_encoding (*m_data)) +
 	VarInt64::codeword_size (detail::offset_encoding (*m_data)) +
 	1;
+    }
+
+    /*********************************************************/
+
+    inline std::size_t label_size () const
+    {
+      return (*m_data) & LABEL_MASK;
     }
 
     /*********************************************************/
@@ -223,33 +176,27 @@ template<typename PayLoad> struct Impl
 
     bool is_leaf () const
     {
-      return detail::is_leaf (*m_data);
+      return (*m_data) & IS_LEAF_MASK;
     }
 
     /*********************************************************/
 
     inline std::size_t size () const
     {
-      auto result = header_size ();
-  
-      if (is_leaf ())
-      {
-	auto payload_end = m_data + header_size ();
-	result += Serialise<PayLoad>::next (payload_end)
-		  - payload_end;
-	            
-      }
-
-      return result;
+      return
+        VarInt32::codeword_size (rank_encoding ()) +
+        VarInt64::codeword_size (offset_encoding ()) +
+       	label_size () +
+	1;
     }
 
     /*********************************************************/
 
     inline std::size_t children_offset () const
     {
-      return VarInt64::deserialise (m_data + 1,
-				    detail::offset_encoding (*m_data));
-
+      return VarInt64::deserialise (
+        m_data + 1,
+	detail::offset_encoding (*m_data));
     }
 
     /*********************************************************/
@@ -261,30 +208,31 @@ template<typename PayLoad> struct Impl
 
     /*********************************************************/
 
-    inline std::uint8_t *payload_data () const
-    {
-      if (!is_leaf ())
-      {
-	throw std::logic_error ("Attempt accessing payload data"
-				" over non-leaf node");
-      }
-
-      return m_data + header_size ();
+    inline std::uint8_t *encoding_end () const
+    { 
+      return label_data () + label_size ();
     }
 
   private:
 
-    inline std::size_t header_size () const
+    /*****************************************************************/
+    /* 
+     * Helper functionalities for node's header decoding 
+     */
+    inline VarInt32::wordsize_t rank_encoding ()
     {
-      return
-        VarInt32::codeword_size (detail::rank_encoding (*m_data)) +
-        VarInt64::codeword_size (detail::offset_encoding (*m_data)) +
-       	detail::label_size (*m_data) +
-	1;
+      return static_cast<VarInt32::wordsize_t> (
+	       ((*m_data) & RANK_MASK) >> BIT_RANK);
+    } 
+
+    inline VarInt64::wordsize_t offset_encoding (std::uint8_t n)
+    {
+      return static_cast<VarInt64::wordsize_t> (
+	      ((*m_data) & OFFSET_MASK) >> BIT_OFFSET);
     }
 
   private:
-    const std::uint8_t *m_data;
+     const std::uint8_t *m_data;
   };
 };
 

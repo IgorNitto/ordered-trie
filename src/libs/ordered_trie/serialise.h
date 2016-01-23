@@ -29,7 +29,14 @@ template<typename T> struct Serialise
    */
   static inline void
   serialise (std::vector<std::uint8_t> &output,
-	     const T &input);
+	     T &&input);
+
+  /**
+   * Append serialisation to output
+   */
+  static inline void
+  serialise_move (std::vector<std::uint8_t> &output,
+		  T &&input);
 
   /**
    * Deserialise object starting at given input address

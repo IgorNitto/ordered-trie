@@ -46,7 +46,7 @@ endif ()
 
 # Install with RPATH set at linking time or shared libraries
 # will not be found by installed executable
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 ############################################################
 # Setup external dependencies
