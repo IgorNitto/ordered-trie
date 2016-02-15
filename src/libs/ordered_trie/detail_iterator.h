@@ -3,13 +3,11 @@
 
 /**
  * @file  detail_iterator.h
- * @brief
+ * @brief Some helper iterators
  */
 
 #include <boost/iterator.hpp>
 #include <boost/range.hpp>
-
-#include <priority_queue>
 
 namespace ordered_trie {
 
@@ -49,7 +47,7 @@ private:
 
   inline void increment ()
   {
-    m_pointed = m_pointed.next_siblings ();
+    m_pointed.advance_to_sibling ();
   }
 
 private:

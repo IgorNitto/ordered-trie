@@ -2,7 +2,7 @@
 #############################################################
 # Configure 3rd party library
 
-set (BOOST_ROOT "/home/igor/boost_1_56_0")
+set (BOOST_ROOT "/home/nitto/software/boost/boost_1_60_0")
 
 find_package (Boost 1.56 COMPONENTS unit_test_framework REQUIRED)
 if (Boost_FOUND)

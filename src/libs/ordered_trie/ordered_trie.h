@@ -11,13 +11,6 @@
 
 namespace ordered_trie {
 
-/**
- * Group of template parameters of ordered trie
- */
-template<typename MetaData,
-         typename Suggestion = std::string,
-         typename Encoding = encoders::v0::Impl>
-class Parameters;
 
 } // namespace ordered_trie {
 
