@@ -283,9 +283,9 @@ const std::string &MakeTrie<T>::label () const {return m_label;}
 
 /***********************************************************/
 template<typename T>
-TrieImpl<T> MakeTrie<T>::move_to_trie ()
+TrieImpl<T> MakeTrie<T>::move_to_trie (MakeTrie<T> &&n)
 {
-  return TrieImpl<T> {std::move (m_subtree_serialised)};
+  return TrieImpl<T> {std::move (n.m_subtree_serialised)};
 }
 
 /***********************************************************/

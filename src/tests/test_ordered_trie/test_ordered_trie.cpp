@@ -16,45 +16,6 @@ using namespace ordered_trie;
 
 /***********************************************************/
 
-namespace
-{
-
-template<typename Node>
-void dsf_print (std::ostream&, const Node&, std::string);
-
-template<typename SiblingsRange>
-void dfs_print_children (std::ostream        &os,
-			 const SiblingsRange &siblings,
-			 std::string          prefix = {})
-{
-  for (const auto node : siblings)
-  {
-    dsf_print (os, node, prefix);
-  }
-}
-
-template<typename Node>
-void dfs_print (std::ostream &os,
-		const Node   &node,
-		std::string   prefix = {})
-{
-  const auto label = node.label ();
-  prefix.append (label.data (), label.size ());
-
-  os << node.rank () << "\t" 
-     << prefix << std::endl;
-
-  if (!node.is_leaf ())
-  {
-    dfs_print_siblings (
-      os, node.children (), prefix);
-  }
-}
-
-} // namespace {
-
-/***********************************************************/
-
 BOOST_AUTO_TEST_CASE (test_encoding_32)
 {
   using detail::VarInt32;

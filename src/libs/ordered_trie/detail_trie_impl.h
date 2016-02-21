@@ -172,9 +172,9 @@ public:
     const bool called_from_root = false);
 
   /**
-   * Extract subtrie contained in this instance
+   * Extract subtrie from this instance
    */
-  TrieImpl<T> move_to_trie ();
+  static TrieImpl<T> move_to_trie (MakeTrie<T> &&);
 
   /**
    * Max encoding size of a single node 

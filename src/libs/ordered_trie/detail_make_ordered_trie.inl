@@ -3,198 +3,118 @@
  * @brief
  */
 
-#include "serialise.h"
+#include "detail_trie_impl.inl"
 
-#include <boost/range/adaptor/transformed.hpp>
-#include <boost/range/algorithm/sort.hpp>
-#include <boost/range/algorithm/copy.hpp>
+#include <boost/range.hpp>
 #include <boost/range/size.hpp>
 
 namespace ordered_trie { namespace detail {
 
-/************************************************************/
-template <typename Encoder>
-void
-ConcreteNode<Encoder>::serialise_header (
-  std::vector<std::uint8_t> &out,
-  size_t                     children_offset)
+template<typename SuggestionsRange,
+	 typename ScoresRange,
+	 typename MetaDataRange>
+make_ordered_trie (const SuggestionsRange &suggestions,
+		   const ScoresRange      &scores,
+		   const MetaDataRange    &metadata)
+  ->TrieImpl<typename boost::range_type<MetaDataRange>::type>
 {
-  if (is_leaf ())
-  {
-    Encoder::serialise_leaf (out,
-			     children_offset,
-			     m_rank,
-			     {m_label.data (), m_label.size ()},
-			     *m_payload_data);
-  }
-  else
-  {
-    Encoder::serialise_internal (out,
-				 children_offset,
-				 m_rank,
-				 {m_label.data (), m_label.size ()});
-  }
-};
+  using MetaDataType =
+    typename boost::range_value<SuggestionsRange>::type;
+  using SuggestionType =
+    typename boost::range_value<SuggestionsRange>::type;
+  using BuilderNode = MakeTrie<MetaDataType>;
+  using TrieLevel   = std::vector<BuilderNode>;
+    
+  auto scores_it = std::begin (scores);
+  auto metadata_it = std::begin (metadata);
 
-/************************************************************/
-template<typename Encoder>
-template<typename FwdRange>
-inline void
-ConcreteNode<Encoder>::append_children (FwdRange &children)
-{
-  BOOST_ASSERT (m_subtree_serialised.empty ());
-  BOOST_ASSERT_MSG (!boost::empty (children),
-		    "Invalid empty range of children");
+  std::vector<TrieLevel> levels;
 
-  if (boost::size (children) == 1)
-  {
-    /*
-     * In case of unique children, evaluate possibility to
-     * collapse label if their size can fit into single label
-     */
-    auto &child = *std::begin (children);
-
-    if ((child.label ().size () + m_label.size ()) < max_label_size)
+  /*
+   * Auxiliary lambda to merge the bottm level of trie
+   * until only it has depth target_depth
+   */
+  const auto merge_levels =
+    [&levels] (const size_t target_depth)
     {
-      /* append label and copy metadata */
+      BOOST_ASSERT (target_depth >= 1);
+      BOOST_ASSERT (target_depth <= levels.size ());
+            
+      while (levels.size () > target_depth)
+      {
+	auto &current_level = level.back ();
+	auto &father_level = level[level.size () - 2];
 
-      m_label.insert (m_label.end (),
-		      child.label ().begin (),
-		      child.label ().end ());
-
-      m_subtree_serialised = std::move (child.m_subtree_serialised);
-      m_rank               = child.rank ();
-      m_payload_data       = std::move (child.m_payload_data);
-      return;
-    }
-  }
-
-  m_rank = serialise_siblings (m_subtree_serialised, children);
-}
-
-/************************************************************/
-
-template<typename Encoder>
-template<typename Input>
-inline std::uint64_t
-ConcreteNode<Encoder>::serialise_siblings (
-  std::vector<std::uint8_t> &output,
-  Input                     &siblings)
-{
-  constexpr size_t max_node_size =
-    max_encoding_size +
-    Serialise<payload_t>::estimated_max_size ();
-
-  /*
-   * Make room for serialisation of children headers
-   */
-  const size_t initial_size = output.size ();
-  output.reserve ((boost::size (siblings) * max_node_size)
-		  + initial_size);
-
-  /*
-   * First part of serialisation consists of concatenation
-   * of all node's header, ordered by _increasing_ rank value
-   */
-  boost::sort (siblings, 
-	       [] (const self_t &lhs, const self_t &rhs)
-	       {
-		 return (lhs.rank () < rhs.rank ());
-	       });
- 
-  const auto first_node = std::begin (siblings);
-  const auto min_rank   = first_node->rank ();
-  	auto prev_node  = first_node;
-	auto base_rank  = first_node->rank ();
-
-  for (auto this_node  = std::next (first_node);
-  	    this_node != std::end (siblings); 
-  	  ++this_node)
-  {
-    const auto children_offset =
-      prev_node->m_subtree_serialised.size ();
-
-    const auto current_rank = this_node->rank ();
-
-    this_node->m_rank  -= base_rank;
-    this_node->serialise_header (output, children_offset);
-
-    prev_node = this_node;
-    base_rank = current_rank;
-  }
-
-  /*
-   * We can serialise the first children only after
-   * the remaining siblings, as this requires to know
-   * total size of the headers
-   */
-  const size_t total_headers_size = output.size () - initial_size;
-
-  /*
-   * Append first node, then perform a rotate to move its encoding
-   * before all the other siblings
-   */
-  first_node->m_rank = 0;
-  first_node->serialise_header (output, total_headers_size);
-
-  std::rotate (output.begin () + initial_size,
-	       output.begin () + initial_size + total_headers_size,
-	       output.end ());
-
-  /*
-   * Second part of the serialisation consists of,
-   * concatenation of all sub-tries serialisation
-   */
-  for (auto &&node: siblings)
-  {
-    output.insert (output.end (),
-		   node.m_subtree_serialised.begin (),
-		   node.m_subtree_serialised.end ());
-
-    node.m_subtree_serialised.clear ();
-  }
-
-  return min_rank;
-}
-
-/************************************************************/
-template<typename Encoder>
-ConcreteNode<Encoder>
-ConcreteNode<Encoder>::Leaf (char             leading_char,
-			     std::uint64_t    rank,
-			     const payload_t &payload)
-{
-  auto node = Leaf (rank, payload);
-  node.m_label.insert (node.m_label.begin (), leading_char);
-  return node;
-}
-
-/************************************************************/
-template<typename Encoder>
-ConcreteNode<Encoder>
-ConcreteNode<Encoder>::Leaf (std::uint64_t    rank,
-			     const payload_t &payload)
-{
-  return self_t {rank, payload};
-}
-
-/************************************************************/
-template<typename Encoder>
-ConcreteNode<Encoder>
-ConcreteNode<Encoder>::Internal (std::string         label,
-			         std::vector<self_t> children)
-{
-  BOOST_ASSERT (label.size () < max_label_size);
-
-  self_t result;
-
-  result.m_label.insert (
-    result.m_label.end (),
-    label.begin (),
-    label.end ());
+	father_level.back ().add_children (std::move (current_level));
+	levels.pop_back ();
+      }
+    };
   
-  result.append_children (children);
-  return result;
+  if (!boost::empty (suggestions))
+  {
+    auto suggestion_prev = *std::begin (suggestions);
+    
+    for (const auto suggestion: suggestions)
+    {
+      BOOST_ASSERT_MSG (scores_it != std::end (scores),
+			"Scores and suggestions range of differing"
+			" sizes");
+
+      BOOST_ASSERT_MSG (metadata_it != std::end (metadata),
+			"Metadata and suggestions range of differing"
+			" sizes");
+      
+      /*
+       * Determing longest common prefix (lcp) length between
+       * current and previous suggestion and merge all trie levels
+       * after lcp.
+       */
+      size_t lcp_length = 0;
+      if (!levels.empty ())
+      {
+	const auto mismatch_it = // NOTE: check behaviour on different lengths
+	  std::match (suggestion.begin (), suggestion.end (),
+		      suggestion_prev.begin());
+
+	lcp_length =
+	  std::distance (suggestion.begin (), mismatch_it);
+	
+	merge_levels (lcp_length + 1);
+      }
+
+      /*
+       * Extend currently built trie adding one node per character
+       * plus one dummy leaf containing metadata and score 
+       */
+      for (auto idx = lcp_length; idx < suggestion.size(); ++idx)
+      {
+	const auto c = suggestion[idx];
+	levels.push_back ({MakeTrie<MetaDataType> {c, {}}});
+      }
+
+      levels.push_back ({
+	MakeTrie<MetaDataType> {c, *scores_it, *metadata_it}});
+			  
+      suggestion_prev = suggestion;
+      ++metadata_it;
+      ++scores_it;
+    }      
+  }
+
+  BOOST_ASSERT_MSG (scores_it == std::end (scores),
+		    "Scores and suggestions range of differing"
+		    " sizes");
+
+  BOOST_ASSERT_MSG (metadata_it == std::end (metadata),
+		    "Metadata and suggestions range of differing"
+		    " sizes");
+
+  /*
+   * Complete trie construction by merging remaining levels
+   */
+  merge_levels (1);
+  return BuilderNode::move_to_trie (
+    BuilderNode {std::move (levels.back ())});
 }
 
 }} // namespace ordered_trie { namespace detail {
