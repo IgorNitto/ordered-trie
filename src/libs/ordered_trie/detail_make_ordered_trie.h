@@ -8,15 +8,17 @@
 
 #include "detail_trie_impl.h"
 
+#include <boost/range.hpp>
+
 namespace ordered_trie { namespace detail {
 
 template<typename SuggestionsRange,
 	 typename ScoresRange,
 	 typename MetaDataRange>
-make_ordered_trie (const SuggestionsRange &suggestions,
-		   const ScoresRange      &scores,
-		   const MetaDataRange    &metadata)
-  ->TrieImpl<typename boost::range_type<MetaDataRange>::type>
+auto make_ordered_trie (const SuggestionsRange &suggestions,
+			const ScoresRange      &scores,
+			const MetaDataRange    &metadata)
+  -> TrieImpl<typename boost::range_value<MetaDataRange>::type>;
 
 }} // namespace ordered_trie { namespace detail {
 

@@ -3,8 +3,6 @@
  * @brief
  */
 
-#include "detail_trie_impl.inl"
-
 #include <boost/range.hpp>
 #include <boost/range/size.hpp>
 
@@ -12,17 +10,15 @@ namespace ordered_trie { namespace detail {
 
 template<typename SuggestionsRange,
 	 typename ScoresRange,
-	 typename MetaDataRange>
-make_ordered_trie (const SuggestionsRange &suggestions,
-		   const ScoresRange      &scores,
-		   const MetaDataRange    &metadata)
-  ->TrieImpl<typename boost::range_type<MetaDataRange>::type>
+	 typename MetadataRange>
+auto make_ordered_trie (const SuggestionsRange &suggestions,
+			const ScoresRange      &scores,
+			const MetadataRange    &metadata)
+  ->TrieImpl<typename boost::range_value<MetadataRange>::type>
 {
-  using MetaDataType =
-    typename boost::range_value<SuggestionsRange>::type;
-  using SuggestionType =
-    typename boost::range_value<SuggestionsRange>::type;
-  using BuilderNode = MakeTrie<MetaDataType>;
+  using MetadataType =
+    typename boost::range_value<MetadataRange>::type;
+  using BuilderNode = MakeTrie<MetadataType>;
   using TrieLevel   = std::vector<BuilderNode>;
     
   auto scores_it = std::begin (scores);
@@ -31,8 +27,8 @@ make_ordered_trie (const SuggestionsRange &suggestions,
   std::vector<TrieLevel> levels;
 
   /*
-   * Auxiliary lambda to merge the bottm level of trie
-   * until only it has depth target_depth
+   * Merge levels of the partially constructed trie
+   * bottom up until there are only target_depth levels
    */
   const auto merge_levels =
     [&levels] (const size_t target_depth)
@@ -42,9 +38,11 @@ make_ordered_trie (const SuggestionsRange &suggestions,
             
       while (levels.size () > target_depth)
       {
-	auto &current_level = level.back ();
-	auto &father_level = level[level.size () - 2];
-
+	auto &current_level = levels.back ();
+	auto &father_level = levels[levels.size () - 2];
+	BOOST_ASSERT (!current_level.empty ());
+	BOOST_ASSERT (!father_level.empty ());
+	
 	father_level.back ().add_children (std::move (current_level));
 	levels.pop_back ();
       }
@@ -63,7 +61,7 @@ make_ordered_trie (const SuggestionsRange &suggestions,
       BOOST_ASSERT_MSG (metadata_it != std::end (metadata),
 			"Metadata and suggestions range of differing"
 			" sizes");
-      
+
       /*
        * Determing longest common prefix (lcp) length between
        * current and previous suggestion and merge all trie levels
@@ -72,13 +70,18 @@ make_ordered_trie (const SuggestionsRange &suggestions,
       size_t lcp_length = 0;
       if (!levels.empty ())
       {
-	const auto mismatch_it = // NOTE: check behaviour on different lengths
-	  std::match (suggestion.begin (), suggestion.end (),
-		      suggestion_prev.begin());
-
-	lcp_length =
-	  std::distance (suggestion.begin (), mismatch_it);
+	auto first_it = suggestion.begin ();
+	auto second_it = suggestion_prev.begin ();
 	
+	while (first_it != suggestion.end () &&
+	       second_it != suggestion_prev.end () &&
+	       *first_it == *second_it)
+	{
+	  ++first_it;
+	  ++second_it;
+	  ++lcp_length;
+	}
+
 	merge_levels (lcp_length + 1);
       }
 
@@ -86,15 +89,20 @@ make_ordered_trie (const SuggestionsRange &suggestions,
        * Extend currently built trie adding one node per character
        * plus one dummy leaf containing metadata and score 
        */
-      for (auto idx = lcp_length; idx < suggestion.size(); ++idx)
+      levels.resize (suggestion.size () + 1);
+      
+      for (auto idx = lcp_length; idx < suggestion.size (); ++idx)
       {
 	const auto c = suggestion[idx];
-	levels.push_back ({MakeTrie<MetaDataType> {c, {}}});
+	levels[idx].push_back ({std::string (1, c), {}});
       }
 
-      levels.push_back ({
-	MakeTrie<MetaDataType> {c, *scores_it, *metadata_it}});
-			  
+      levels.back ().push_back ({"", *scores_it, *metadata_it});
+
+      BOOST_ASSERT (std::all_of (levels.begin (),
+				 levels.end (),
+				 [] (const auto &x) {return !x.empty ();}));
+      
       suggestion_prev = suggestion;
       ++metadata_it;
       ++scores_it;
@@ -113,8 +121,7 @@ make_ordered_trie (const SuggestionsRange &suggestions,
    * Complete trie construction by merging remaining levels
    */
   merge_levels (1);
-  return BuilderNode::move_to_trie (
-    BuilderNode {std::move (levels.back ())});
+  return BuilderNode {std::move (levels.back ())}.move_to_trie();
 }
 
 }} // namespace ordered_trie { namespace detail {

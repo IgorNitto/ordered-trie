@@ -29,18 +29,18 @@ message (STATUS "Configured for build-type: ${CMAKE_BUILD_TYPE}")
 if (UNIX)
   if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     set (CMAKE_CXX_FLAGS_DEBUG
-        "${CMAKE_CXX_FLAGS_DEBUG} -fPIC --std=c++11 -O0 -Wall")
+        "${CMAKE_CXX_FLAGS_DEBUG} -fPIC --std=c++14 -O0 -Wall")
     message (STATUS "gcc debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 
     set (CMAKE_CXX_FLAGS_RELEASE
-        "${CMAKE_CXX_FLAGS_RELEASE} -fPIC --std=c++11 -O3 -Wall")
+        "${CMAKE_CXX_FLAGS_RELEASE} -fPIC --std=c++14 -O3 -Wall")
       message (STATUS "gcc release flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
   elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "CLANG")
     set (CMAKE_CXX_FLAGS_DEBUG
-         "${CMAKE_CXX_FLAGS_DEBUG} -fPIC --std=c++11")
+         "${CMAKE_CXX_FLAGS_DEBUG} -fPIC --std=c++14")
     set (CMAKE_CXX_FLAGS_RELEASE
-         "${CMAKE_CXX_FLAGS_RELEASE} -fPIC --std=c++11 -O3")
+         "${CMAKE_CXX_FLAGS_RELEASE} -fPIC --std=c++14 -O3")
   endif ()   
 elseif (WIN32)
   message (WARNING "No specific configuration found for Windows")
