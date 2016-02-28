@@ -9,7 +9,8 @@ set (THIS_TARGET "test_node_encoding")
 set (THIS_TARGET_TYPE "TEST")
 
 # List headers and source files
-set (THIS_SOURCES "test_node_encoding.cpp")
+set (THIS_SOURCES "test_node_encoding_utils.h"
+                  "test_node_encoding.cpp")
 
 # State dependencies
 set (USE_ORDERED_TRIE  "TRUE")

@@ -15,6 +15,8 @@ namespace ordered_trie {
  */
 struct Void
 {
+  bool operator==(Void) const {return true;}
+  bool operator<(Void) const {return false;}
 };
 
 template<> struct Serialise<Void>

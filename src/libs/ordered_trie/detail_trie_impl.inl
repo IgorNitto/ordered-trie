@@ -18,7 +18,7 @@
 
 namespace ordered_trie { namespace detail {
 
-namespace v0 {
+inline namespace v0 {
 
 /***********************************************************/
 /*
@@ -283,9 +283,9 @@ const std::string &MakeTrie<T>::label () const {return m_label;}
 
 /***********************************************************/
 template<typename T>
-TrieImpl<T> MakeTrie<T>::move_to_trie (MakeTrie<T> &&n)
+TrieImpl<T> MakeTrie<T>::move_to_trie ()
 {
-  return TrieImpl<T> {std::move (n.m_subtree_serialised)};
+  return TrieImpl<T> {std::move (m_subtree_serialised)};
 }
 
 /***********************************************************/
@@ -434,9 +434,14 @@ void MakeTrie<T>::add_children (
   std::vector<MakeTrie<T>> siblings,
   const bool called_from_root)
 {
-  BOOST_ASSERT (!m_metadata);
-  BOOST_ASSERT_MSG (!siblings.empty (),
-		      "Internal node with empty children");
+  BOOST_ASSERT_MSG (!m_metadata,
+		    "Attempting to add children to a leaf");
+
+  if (siblings.empty ())
+  {
+    /* Nothing to do, children must be added later */
+    return;
+  }
 
   /*
    * If there is a single children node, check possibility to

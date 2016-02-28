@@ -17,8 +17,8 @@
 
 namespace ordered_trie { namespace detail {
 
-namespace v0 {
-
+inline namespace v0 {
+    
 /**
  * Expose view over information associated to a trie node.
  */
@@ -141,7 +141,7 @@ public:
    */
   MakeTrie (std::string label,
 	    std::size_t rank,
-	    T           metadata = {});
+	    T           metadata);
 
   /**
    * Make internal node
@@ -174,7 +174,7 @@ public:
   /**
    * Extract subtrie from this instance
    */
-  static TrieImpl<T> move_to_trie (MakeTrie<T> &&);
+  TrieImpl<T> move_to_trie ();
 
   /**
    * Max encoding size of a single node 
@@ -198,7 +198,9 @@ private:
   std::vector<std::uint8_t> m_subtree_serialised;
 }; 
 
-}}} // namespace ordered_trie { namespace detail { namespace v0 {
+} // namespace v0 {
+
+}} // namespace ordered_trie { namespace detail {
 
 #include "detail_trie_impl.inl"
 

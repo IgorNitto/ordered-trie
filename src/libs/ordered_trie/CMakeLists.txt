@@ -13,6 +13,8 @@ set (THIS_TARGET_TYPE "STATIC_LIBRARY")
 set (THIS_HEADERS
      "detail_iterator.h"
      "detail_iterator.inl"
+     "detail_make_ordered_trie.h"
+     "detail_make_ordered_trie.inl"
      "detail_trie_impl.h"
      "detail_trie_impl.inl"
      "detail_payload_types.h"
