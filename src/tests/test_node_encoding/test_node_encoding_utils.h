@@ -86,7 +86,7 @@ auto make_from_completions (const std::vector<Completion<T>> &in)
 }
 
 /***********************************************************/
-/**
+/*
  * Depth-first visit input trie and outputting the pair
  * (suggestion, score) when encounter a leaf.
  */
@@ -136,6 +136,31 @@ auto dfs_visit (const TrieImpl<T> &trie)
   dfs_visit_children (back_inserter (result),
                       trie.root ().children ());
   return result;
+}
+
+template<typename T>
+auto label (const Node<T> &root, const Node<T> &node)
+  -> std::string
+{
+  std::string label;
+
+  root.visit (node, [&label] (const Node<T> &n)
+  {
+    label.append (n.label ().begin (), n.label ().end ());  
+  });
+
+  return label;
+}
+ 
+template<typename T>
+auto ordered_visit (const TrieImpl<T> &trie)
+  -> std::vector<Node<T>>
+{
+  return std::vector<Node<T>>
+  {
+    OrderedLeavesIterator<Node<T>> {trie.root ()},
+    OrderedLeavesIterator<Node<T>>::end (trie.root ())
+  };
 }
 
 }}

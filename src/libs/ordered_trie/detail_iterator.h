@@ -3,11 +3,14 @@
 
 /**
  * @file  detail_iterator.h
- * @brief Some helper iterators
+ * @brief Auxiliary iterators
  */
 
 #include <boost/iterator.hpp>
 #include <boost/range.hpp>
+
+#include <queue>
+#include <tuple>
 
 namespace ordered_trie {
 
@@ -27,75 +30,63 @@ public:
   /**
    * Ctor from pointer to node
    */
-  explicit SiblingsIterator (const Node &node)
-    : m_pointed (node)
-  {
-  }
+  explicit SiblingsIterator (const Node &);
 
 private:
   friend class boost::iterator_core_access;
 
-  inline Node dereference () const
-  {
-    return m_pointed;
-  }
-
-  inline bool equal (const SiblingsIterator<Node> &other) const
-  {
-    return (m_pointed == other.m_pointed);
-  }
-
-  inline void increment ()
-  {
-    m_pointed.advance_to_sibling ();
-  }
+  inline Node dereference () const;
+  inline bool equal (const SiblingsIterator<Node>&) const;
+  inline void increment ();
 
 private:
   Node m_pointed;
 };
-
-#if 0
-
-/**
- * Create range of siblings node from pointer to
- * beginning of first sibling's encoding
- */
-template<typename Parameters>
-inline auto make_siblings_range (const std::uint8_t *base)
-  -> SiblingsRange<Parameters>;
-
+ 
 /**
  * Iterate over set of leaves contained in subtrie
  * rooted at given node in order of increasing score
  * and return a completion object for each of them
  */
-template<typename Parameters>
-class CompletionsIterator
+template<typename Node>
+class OrderedLeavesIterator
   : public boost::iterator_facade< 
-     /* CRTP       */ CompletionsIterator<Parameters>,
-     /* value_type */ Completion<Parameters>,
+     /* CRTP       */ OrderedLeavesIterator<Node>,
+     /* value_type */ Node,
      /* category   */ boost::forward_traversal_tag,
-     /* reference  */ Completion<Parameters>  
-    >
+     /* reference  */ Node>
 {
 public:
   
-  explicit CompletionsIterator (const std::uint8_t *in);
+  explicit OrderedLeavesIterator (const Node &root);
 
+  static auto end (const Node &root)
+    -> OrderedLeavesIterator<Node>;
+  
 private:
-  friend class boost::core_iterator_access;
 
-  inline Completions<Parameters> dereference () const;  
-  inline bool equal (const CompletionsIterator<Parameters>&) const;
+  friend class boost::iterator_core_access;
+
+  inline Node dereference () const;  
+  inline bool equal (const OrderedLeavesIterator<Node> &) const;
   inline void increment ();
-
+  OrderedLeavesIterator () noexcept;
+    
 private:
-  struct SearchPoint;
-  std::priority_queue<SearchPoint> m_frontier;
+  class SearchNode;
+  inline void push_leftmost_path (SearchNode);
+  inline void next_leaf ();
+  
+  Node m_root;
+ 
+  std::priority_queue<
+    SearchNode,
+    std::vector<SearchNode>,
+    std::greater<SearchNode>> m_frontier;
 };
 
-#endif
-
 } // namespace ordered_trie {
+
+#include "detail_iterator.inl"
 
 #endif

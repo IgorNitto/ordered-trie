@@ -28,8 +28,12 @@ class Node
 public:
 
   using metadata_type = T;
-  using SiblingsRange =
-    boost::iterator_range<SiblingsIterator<Node<T>>>;
+  using SiblingsRange = boost::iterator_range<SiblingsIterator<Node<T>>>;
+
+  /**
+   * Ctor making a null instance
+   */
+  explicit Node () = default;
 
   /**
    * Ctor from base address
@@ -62,13 +66,25 @@ public:
    */
   SiblingsRange children () const;
 
-  bool operator== (const Node<T> &other) const;
-
-  /* Implementation detail */
+  /**
+   * Visit downward path to a given descendant calling input
+   * functor on each node except this.
+   */
+  template<typename F>
+  void visit (const Node<T> &dest, F&& f) const;
+  
+  /*
+   * Supplied for iterators implementation
+   */
   void advance_to_sibling ();
 
+  const std::uint8_t* data () const {return m_data;}
+  
+  bool operator== (const Node<T> &other) const;
+  bool operator< (const Node<T> &other) const;
+
 private:
-  Node () = default;
+
   Node (const std::uint8_t *data,
 	const std::uint64_t base_score,
 	const std::uint8_t *base_children) noexcept;

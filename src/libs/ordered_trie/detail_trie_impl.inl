@@ -205,6 +205,13 @@ bool Node<T>::operator== (const Node<T> &other) const
 
 /***********************************************************/
 template<typename T>
+bool Node<T>::operator< (const Node<T> &other) const
+{
+  return (m_data == other.m_data);
+}
+
+/***********************************************************/
+template<typename T>
 std::uint64_t Node<T>::children_offset () const
 {
   const auto offset_encoding =
@@ -220,6 +227,47 @@ template<typename T>
 const std::uint8_t* Node<T>::children_ptr () const
 {
   return m_children + children_offset ();
+}
+
+/***********************************************************/
+template<typename T>
+template<typename F>
+void Node<T>::visit (const Node<T> &destination, F &&f) const
+{
+  if (*this == destination || is_leaf ())
+  {
+    return;
+  }
+
+  const auto children_range = children ();
+
+  /* Proceed downward to the destination node */
+
+  auto target_it = std::begin (children_range);
+
+  for (auto it = target_it;
+            it != std::end (children_range);
+          ++it)
+  {
+    if (it->is_leaf ())
+    {
+      if (*it == destination)
+      {
+	target_it = it;
+        break;
+      }
+    }
+    else if (it->children_ptr () > destination.m_data)
+    {
+      break;
+    }
+
+    target_it = it;
+  }
+
+  f(*target_it);
+
+  target_it->visit (destination, std::forward<F> (f));
 }
 
 /***********************************************************/
