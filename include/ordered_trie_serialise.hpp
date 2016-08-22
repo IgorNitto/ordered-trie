@@ -1,14 +1,14 @@
+#ifndef ORDERED_TRIE_SERIALISE_HPP
+#define ORDERED_TRIE_SERIALISE_HPP
+
 /**
- * @file  serialise.h
- * @brief Serialisation scheme for metadata
+ * @file  ordered_trie_serialise.hpp
+ * @brief Serialisation scheme
  */
 
-#ifndef ORDERED_TRIE_SERIALISE_H
-#define ORDERED_TRIE_SERIALISE_H
-
-#include <string>
-
-#include <boost/utility/string_ref.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <vector>
 
 namespace ordered_trie {
 
@@ -32,13 +32,6 @@ template<typename T> struct Serialise
 	     T &&input);
 
   /**
-   * Append serialisation to output
-   */
-  static inline void
-  serialise_move (std::vector<std::uint8_t> &output,
-		  T &&input);
-
-  /**
    * Deserialise object starting at given input address
    */
   static inline auto
@@ -48,13 +41,7 @@ template<typename T> struct Serialise
    * Advance pointer to first byte past end of encoding
    */
   static inline auto
-  next (const std::uint8_t *start) -> const std::uint8_t*;
-
-  /**
-   * Upper bound on encoding size of input
-   */
-  static inline auto
-  serialised_size (const T&) -> size_t;
+  skip (const std::uint8_t *start) -> const std::uint8_t*;
 
   /**
    * Expected maximum encoding length of a generic metadata
@@ -65,5 +52,5 @@ template<typename T> struct Serialise
 
 } // namespace ordered_trie {
 
-#endif // ORDERED_TRIE_SERIALISE_H
+#endif
 
