@@ -23,6 +23,8 @@
 #include <tuple>
 #include <bitset>
 #include <unordered_set>
+#include <functional>
+#include <utility>
 
 using namespace ordered_trie;
 using namespace ordered_trie::test_utils;
@@ -31,7 +33,7 @@ namespace
 {
 
 template<typename S>
-std::vector<std::pair<std::string, S>>
+std::vector<typename OrderedTrie<S>::value_type>
 make_two_digits_suggestions (size_t length,
 			     size_t sample_size,
 			     size_t seed)
@@ -52,7 +54,7 @@ make_two_digits_suggestions (size_t length,
   
   suggestion_int.resize (sample_size);
 
-  std::vector<std::pair<std::string, S>> result;
+  std::vector<typename OrderedTrie<S>::value_type> result;
   result.reserve (sample_size);
   S score = 0;
 
@@ -72,6 +74,22 @@ make_two_digits_suggestions (size_t length,
 }  
 
 } // namespace {
+
+
+BOOST_AUTO_TEST_CASE (test_suggestion_operators)
+{
+  using Suggestion = OrderedTrie<std::int64_t>::value_type;
+
+  Suggestion foo;
+  Suggestion bar {"bar", 0};
+
+  std::set<Suggestion> {foo, bar};
+
+  BOOST_CHECK (bar.string () == "bar");
+  BOOST_CHECK (bar.score () == 0);  
+  BOOST_CHECK (foo < bar);
+  BOOST_CHECK (bar == bar);
+}
 
 BOOST_AUTO_TEST_CASE (test_serialise_integer)
 {

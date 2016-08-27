@@ -17,6 +17,32 @@
 namespace ordered_trie {
 
 /**
+ * Completion is the type of values stored in an
+ * oredered trie instance.
+ * It is a pair of a string and a score extended
+ * with two accessor functions string () and score ().
+ */
+template<typename Score>
+class Completion : public std::pair<std::string, Score>
+{
+public:
+  using pair_t = std::pair<std::string, Score>;
+
+  template<typename T, typename U>
+  Completion (T&& string, U&& score);
+  Completion ()                             = default;
+  Completion (const Completion&)            = default;
+  Completion (Completion&&)                 = default;
+  Completion& operator= (const Completion&) = default;
+  Completion& operator= (Completion&&)      = default;
+  
+  const std::string &string () const;
+  Score score () const;
+
+  operator const pair_t& () const;
+};  
+
+/**
  * OrderedTrie
  */
 template<typename Score>
@@ -25,7 +51,7 @@ class OrderedTrie
 public:
 
   using score_type = Score;
-  using value_type = std::pair<std::string, Score>;
+  using value_type = Completion<Score>;
 
   /**
    * Ordered completions iterator. 

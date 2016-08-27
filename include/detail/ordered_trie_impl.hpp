@@ -151,6 +151,40 @@ bool find_leaf (Node &locus,
 
 } // namespace detail {
 
+/***************************************************/
+/*
+ * Completion
+ */
+
+template<typename Score>
+template<typename T, typename U>
+Completion<Score>::Completion (T&& str, U&& score)
+  : Completion<Score>::pair_t {std::forward<T> (str),
+                               std::forward<U> (score)}
+{
+}
+
+template<typename Score>
+const std::string& Completion<Score>::string () const
+{
+  return std::get<0> (*this);
+}
+
+template<typename Score>
+Score Completion<Score>::score () const
+{
+  return std::get<1> (*this);
+}
+
+template<typename Score>
+Completion<Score>::operator
+const Completion::pair_t & () const
+{
+  return *this;
+}
+
+
+/***************************************************/  
 /**
  * Store template parameters
  */
@@ -551,8 +585,8 @@ auto make_ordered_trie (const FwdRange &suggestions,
   using Suggestion =
     typename boost::range_value<FwdRange>::type;
 
-  using Score =
-    typename std::tuple_element<1, Suggestion>::type;
+  using Score = std::decay_t<
+    decltype (std::get<1> (std::declval<Suggestion> ()))>;
 
   return OrderedTrie<Score>
   {
