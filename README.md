@@ -7,14 +7,14 @@ C++ header-only library for ordered prefix search with persistency support.
 Requirements
 -------------
 
-This is an header-only library requiring to be compiled with a C++14 compliant compiler with Boost in the include path (we reccomend Boost 1.60.0 or higher).
+This is an header-only library requiring to be compiled with a C++14 compliant compiler with Boost in the include path (Boost 1.60.0 or higher is recommended).
 
 Unit tests are built and run by launching the script `make_tests.sh`, which relies on CMake.
 
 Examples
 -------------
 
-Simple example showing in-memory construction and querying:
+Example of in-memory construction and querying:
 
 ```cpp
 
@@ -46,8 +46,7 @@ Simple example showing in-memory construction and querying:
               << completion.score () << std::endl;
   }
 
-  // Test if a completion is present, retireve associated
-  // score
+  // Test if a completion is present, get associated score
 
   if (trie.count ("babba"))
   {
