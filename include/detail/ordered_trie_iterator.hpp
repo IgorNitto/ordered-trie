@@ -1,11 +1,15 @@
-#ifndef DETAIL_ORDERED_TRIE_ITERATOR_HPP
-#define DETAIL_ORDERED_TRIE_ITERATOR_HPP
-
 /**
  * @file  detail_iterator.h
  * @brief Auxiliary logic to build iterators and
  *        visit sequence of nodes.
+ *
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package.
+ * 
  */
+
+#ifndef DETAIL_ORDERED_TRIE_ITERATOR_HPP
+#define DETAIL_ORDERED_TRIE_ITERATOR_HPP
 
 #include <boost/iterator.hpp>
 #include <boost/range.hpp>

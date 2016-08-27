@@ -1,10 +1,14 @@
-#ifndef DETAIL_ORDERED_TRIE_BUILTIN_SERIALISE_HPP
-#define DETAIL_ORDERED_TRIE_BUILTIN_SERIALISE_HPP
-
 /**
  * @file  ordered_trie_builtin_serialise.hpp
- * @brief 
+ *
+ *
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package.
+ * 
  */
+
+#ifndef DETAIL_ORDERED_TRIE_BUILTIN_SERIALISE_HPP
+#define DETAIL_ORDERED_TRIE_BUILTIN_SERIALISE_HPP
 
 #include "../ordered_trie_serialise.hpp"
 

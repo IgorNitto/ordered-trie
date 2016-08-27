@@ -1,9 +1,13 @@
-#ifndef DETAIL_ORDERED_TRIE_IMPL_HPP
-#define DETAIL_ORDERED_TRIE_IMPL_HPP
-
 /**
  * @file  detail_ordered_trie_impl.hpp
+ * @brief ordered_trie.hpp inlined implementation
+ *
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package. 
  */
+
+#ifndef DETAIL_ORDERED_TRIE_IMPL_HPP
+#define DETAIL_ORDERED_TRIE_IMPL_HPP
 
 #include "ordered_trie_iterator.hpp"
 #include "ordered_trie_builder.hpp"

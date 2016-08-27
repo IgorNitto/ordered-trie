@@ -26,6 +26,8 @@
 #include <functional>
 #include <utility>
 
+BOOST_AUTO_TEST_CASE (dummy) {}
+
 using namespace ordered_trie;
 using namespace ordered_trie::test_utils;
 
@@ -74,7 +76,6 @@ make_two_digits_suggestions (size_t length,
 }  
 
 } // namespace {
-
 
 BOOST_AUTO_TEST_CASE (test_suggestion_operators)
 {

@@ -1,10 +1,14 @@
-#ifndef DETAIL_ORDERED_TRIE_NODE_HPP
-#define DETAIL_ORDERED_TRIE_NODE_HPP
-
 /**
  * @file  detail/ordered_trie_node.hpp
  * @brief Node class definition
+ *
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package.
+ *  
  */
+
+#ifndef DETAIL_ORDERED_TRIE_NODE_HPP
+#define DETAIL_ORDERED_TRIE_NODE_HPP
 
 #include "ordered_trie_builtin_serialise.hpp"
 #include "ordered_trie_varint.hpp"

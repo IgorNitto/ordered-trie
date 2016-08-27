@@ -1,9 +1,15 @@
+/**
+ * @file  ordered_trie.hpp
+ * @brief A static container for prefix search
+ *        supporting persistency.
+ *
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package.
+ * 
+ */
+
 #ifndef ORDERED_TRIE_HPP
 #define ORDERED_TRIE_HPP
-
-/**
- * @file ordered_trie.h
- */
 
 #include "detail/ordered_trie_node.hpp"
 #include "detail/ordered_trie_store.hpp"
@@ -20,7 +26,7 @@ namespace ordered_trie {
  * Completion is the type of values stored in an
  * oredered trie instance.
  * It is a pair of a string and a score extended
- * with two accessor functions string () and score ().
+ * with accessor functions string () and score ().
  */
 template<typename Score>
 class Completion : public std::pair<std::string, Score>

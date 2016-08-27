@@ -1,9 +1,13 @@
-#ifndef ORDERED_TRIE_DETAIL_ORDERED_TRIE_BUILDER_HPP
-#define ORDERED_TRIE_DETAIL_ORDERED_TRIE_BUILDER_HPP
-
 /**
  * @file  detail_ordered_trie_builder.hpp
+ *
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package.
+ * 
  */
+
+#ifndef ORDERED_TRIE_DETAIL_ORDERED_TRIE_BUILDER_HPP
+#define ORDERED_TRIE_DETAIL_ORDERED_TRIE_BUILDER_HPP
 
 #include "ordered_trie_builtin_serialise.hpp"
 #include "ordered_trie_node.hpp"

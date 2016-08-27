@@ -1,10 +1,14 @@
-#ifndef DETAIL_ORDERED_TRIE_VARINT_HPP
-#define DETAIL_ORDERED_TRIE_VARINT_HPP
-
 /**
  * @file  integral_encoding.h
  * @brief Variable-length integer encoding functions
+ *
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package.
+ * 
  */
+
+#ifndef DETAIL_ORDERED_TRIE_VARINT_HPP
+#define DETAIL_ORDERED_TRIE_VARINT_HPP
 
 #include "ordered_trie_builtin_serialise.hpp"
 

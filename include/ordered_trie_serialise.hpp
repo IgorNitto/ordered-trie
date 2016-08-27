@@ -1,10 +1,14 @@
-#ifndef ORDERED_TRIE_SERIALISE_HPP
-#define ORDERED_TRIE_SERIALISE_HPP
-
 /**
  * @file  ordered_trie_serialise.hpp
  * @brief Serialisation scheme
+ *
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package.
+ *
  */
+
+#ifndef ORDERED_TRIE_SERIALISE_HPP
+#define ORDERED_TRIE_SERIALISE_HPP
 
 #include <cstddef>
 #include <cstdint>

@@ -1,9 +1,14 @@
+/**
+ * @file  detail_ordered_trie_store.h
+ * @brief Persistency layer for OrderedTrie
+ *
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package.
+ * 
+ */
+
 #ifndef DETAIL_ORDERED_TRIE_STORE_HPP
 #define DETAIL_ORDERED_TRIE_STORE_HPP
-
-/**
- * @file detail_ordered_trie_store.h
- */
 
 #include "ordered_trie_node.hpp"
 #include "ordered_trie_builtin_serialise.hpp"
