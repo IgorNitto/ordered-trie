@@ -99,12 +99,15 @@ Building and running unit tests requires CMake and can be done by just launching
 Benchmarks
 -------------------------------
 
-This benchmark was conducted over a text dump of all titles of Wikipedia articles (downloadable from <https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-all-titles.gz>). I selected a sample of 9.2M rows (starting with letter in A-E) and constructed OrderedTrie. 
+This benchmark was conducted over a text dump of all titles of Wikipedia articles (downloadable from <https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-all-titles.gz>). I selected a sample of 9.2M rows (starting with letters from A to E) and constructed OrderedTrie instance over it and measured some memory related stats:
 
+|                       |         |
 |-----------------------|--------:|
 |Original text size     | 195226KB|
-|OrderedTrie size       | 116466KB|
+|`OrderedTrie` size     | 116466KB|
 |Peak memory usage      | 343336KB|
+
+Since the original file contains only the title text, in this experiment I used as score the length of the title.
 
 TODO: Extend
 
