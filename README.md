@@ -21,7 +21,7 @@ The `OrderedTrie` class supports the traditional constructor idioms of standard 
 
   #include "ordered_trie.hpp"
 
-  using namepsace ordered_trie;
+  using namespace ordered_trie;
 
   // Construct via initializer list of (string, score) pairs
 
@@ -39,14 +39,13 @@ The `OrderedTrie` class supports the traditional constructor idioms of standard 
      {"abba", 5},
      {"babba", 14},
      {"bar", 30}
-   }
+   };
 
    const OrderedTrie<int> trie_2 {input.begin (), input.end ()};
 
    // Using make_orered_trie factory which implicitly deduce the Score type
 
-   const auto trie_3 = make_ordered_trie (input)
-
+   const auto trie_3 = make_ordered_trie (input);
 ```
 
 The `complete()` member function return a range enumerating all completions for a given string in descending order of rank. The output is of type conforming the Forward Range concept as defined in Boost.Range. 
@@ -70,7 +69,7 @@ Moreover, `OrderedTrie` can be read/writen from file directly (literally by memo
 
 ```cpp
    trie.write ("./trie_file");
-   const auto trie_2 = OrderedTrie<int>::read ("./trie_file")
+   const auto trie_2 = OrderedTrie<int>::read ("./trie_file");
 ```
 
 Member functions `count()` and `score()` are provided to check the presence of a string in the collection and retrieve its associated score object:
