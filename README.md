@@ -4,13 +4,13 @@ Ordered Trie
 
 A C++ header-only library providing a static persistent container for the *ordered prefix completion* task.
 
-Given a set of string `S`, a prefix completion query asks to enumerate all strings in `S` having a given input string `p` as prefix. In more programming terminology, the output to a prefix completion should an iterator-type object going through the strings in `S` starting with `p` in an unspecified order.
+Given a set of string `S`, a prefix completion query asks to enumerate all strings in `S` having a given input string `p` as prefix. In other words, the output to a prefix completion should be an iterator-type object enumerating the strings in `S` prefixed by `p` in an unspecified order.
 
-If the strings in S have an associated ranking score, the ordered prefix completion additionally asks the the output strings to be iterated in order of rank (descending rank, by convention).
+If the strings in `S` have an associated ranking score, the ordered prefix completion query additionally requests the output strings to be iterated in order of rank (descending rank, by convention).
 
-Traditional algorithmic solution to such problem build upon the trie data structure <https://en.wikipedia.org/wiki/Trie>.
+Traditional algorithmic solutions to such problem build upon the trie data structure <https://en.wikipedia.org/wiki/Trie>.
 
-This library provides a single container class `OrderedTrie`, particularly tuned to have small memory occupancy. The examples in the following section illustrate some of its features.
+This library aims at offering an efficient tool for ordered prefix completion with the `OrderedTrie` class. This has an interface similar to that of standard C++ containers, can be easily serialised to file and is particularly optimised for space consumption. The following examples illustrate its main features.
 
 Examples
 -----------------------------------
@@ -92,13 +92,20 @@ A C++14 compliant compiler and Boost (version 1.60.0 or higher is recommended).
 Building
 -------------------------------
 
-This is an header-only library, so no building is necessary.
+This is an header-only library, so no separate compilation is necessary.
 
-Building and running unit tests requires CMake and can be done by just launching % make_tests.sh
+Building and running unit tests requires CMake and can be done by just launching scripts `make_tests.sh`
 
 Benchmarks
 -------------------------------
 
-TODO
+This benchmark was conducted over a text dump of all titles of Wikipedia articles (downloadable from <https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-all-titles.gz>). I selected a sample of 9.2M rows (starting with letter in A-E) and constructed OrderedTrie. 
+
+|-----------------------|--------:|
+|Original text size     | 195226KB|
+|OrderedTrie size       | 116466KB|
+|Peak memory usage      | 343336KB|
+
+TODO: Extend
 
 
